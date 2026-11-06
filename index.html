@@ -23,7 +23,9 @@
         }
         #countdown {
             display: flex;
-            gap: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         .time-box {
             background: #161b22;
@@ -50,6 +52,7 @@
 
     <h1>Countdown to 2027</h1>
     <div id="countdown">
+        <div class="time-box"><span class="number" id="months">00</span><span class="label">Months</span></div>
         <div class="time-box"><span class="number" id="days">00</span><span class="label">Days</span></div>
         <div class="time-box"><span class="number" id="hours">00</span><span class="label">Hours</span></div>
         <div class="time-box"><span class="number" id="minutes">00</span><span class="label">Mins</span></div>
@@ -57,11 +60,11 @@
     </div>
 
     <script>
-        const targetDate = new Date('January 1, 2027 00:00:00').getTime();
+        const targetDate = new Date('January 1, 2027 00:00:00');
 
         function updateCountdown() {
-            const now = new Date().getTime();
-            const difference = targetDate - now;
+            const now = new Date();
+            let difference = targetDate - now;
 
             if (difference < 0) {
                 document.getElementById('countdown').innerHTML = "<h2>Happy New Year 2027! 🎉</h2>";
@@ -69,11 +72,34 @@
                 return;
             }
 
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+            // Calculate calendar months and days breakdown
+            let currentYear = now.getFullYear();
+            let currentMonth = now.getMonth();
+            
+            let targetYear = targetDate.getFullYear();
+            let targetMonth = targetDate.getMonth();
 
+            let months = (targetYear - currentYear) * 12 + (targetMonth - currentMonth);
+            
+            // Adjust if current day of month is past the target day of month
+            let tempDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds());
+            tempDate.setMonth(tempDate.getMonth() + months);
+            
+            if (tempDate > targetDate) {
+                months--;
+                tempDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds());
+                tempDate.setMonth(tempDate.getMonth() + months);
+            }
+
+            // Remaining time after calculating full months
+            let remainingMs = targetDate - tempDate;
+
+            const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+
+            document.getElementById('months').innerText = String(months).padStart(2, '0');
             document.getElementById('days').innerText = String(days).padStart(2, '0');
             document.getElementById('hours').innerText = String(hours).padStart(2, '0');
             document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
